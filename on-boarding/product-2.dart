@@ -39,7 +39,7 @@ class ProductManager {
   }
 
   // edit a product
-  void edit(name, [new_name, price, description]) {
+  void edit(name, {new_name, price, description}) {
     if (new_name != null) {
       double? new_price = products[name]!.price;
       String? new_description = products[name]!.description;
