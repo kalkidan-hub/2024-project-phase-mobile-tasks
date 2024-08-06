@@ -1,2 +1,2 @@
 # 2024-project-phase-mobile-tasks
-mobile track at a2sv 
+while learning mobile app development at a2sv 
