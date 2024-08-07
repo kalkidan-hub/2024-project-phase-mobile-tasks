@@ -76,16 +76,17 @@ class eCommerce {
 // ... Product and eCommerce classes as before
 
 void main() {
+  print("Welcome to the eCommerce command-line App");
+  print("you shall interact with the app using the action you want to take");
+  print("view, viewall, edit and add  are the available actions");
+  print("enjoy your stay :)");
+
   eCommerce manager = eCommerce();
   manager.defaulting();
 
   while (true) {
     stdout.write('> ');
     String? command = stdin.readLineSync()?.trim();
-    print("Welcome to the eCommerce command-line App");
-    print("you shall interact with the app using the action you want to take");
-    print("view, viewall, edit and add  are the available actions");
-    print("enjoy your stay :)");
 
     if (command == null || command.isEmpty) continue;
 
