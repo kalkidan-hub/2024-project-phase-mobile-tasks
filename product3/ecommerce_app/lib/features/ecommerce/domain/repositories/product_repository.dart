@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:ecommerce_app/core/error/failute.dart';
+import 'package:ecommerce_app/core/error/failure.dart';
 import 'package:ecommerce_app/features/ecommerce/domain/entities/product.dart';
 
 abstract class ProductRepository {

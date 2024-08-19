@@ -5,3 +5,8 @@ class Failure extends Equatable {
   // TODO: implement props
   List<Object?> get props => throw UnimplementedError();
 }
+// general failure
+
+class ServerFailure extends Failure {}
+
+class CacheFailure extends Failure {}
