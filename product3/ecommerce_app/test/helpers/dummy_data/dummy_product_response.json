@@ -1,0 +1,24 @@
+{
+    "id": 1,
+    "name": "Sample Product",
+    "description": "This is a sample product description.",
+    "price": 19.99,
+    "currency": "USD",
+    "in_stock": true,
+    "categories": ["electronics", "gadgets"],
+    "tags": ["new", "popular", "sale"],
+    "ratings": {
+      "average": 4.5,
+      "count": 150
+    },
+    "dimensions": {
+      "weight": "1.5 kg",
+      "width": "10 cm",
+      "height": "20 cm",
+      "depth": "5 cm"
+    },
+    "manufacturer": {
+      "name": "Sample Manufacturer",
+      "address": "123 Sample Street, Sample City, SC 12345"
+    }
+  }

@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:ecommerce_app/core/error/failute.dart';
-import 'package:ecommerce_app/domain/entities/product.dart';
+import 'package:ecommerce_app/features/ecommerce/domain/entities/product.dart';
 
 abstract class ProductRepository {
   Future<Either<Failure, Product>> viewAllProduct();
