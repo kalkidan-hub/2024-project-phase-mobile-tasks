@@ -6,7 +6,7 @@ import 'package:ecommerce_app/features/ecommerce/domain/repositories/product_rep
 class ViewAllProducts {
   final ProductRepository productRepository;
   ViewAllProducts(this.productRepository);
-  Future<Either<Failure, Product>> execute() {
+  Future<Either<Failure, List<Product>>> execute() {
     return productRepository.viewAllProduct();
   }
 }
