@@ -1,2 +1,33 @@
-# 2024-project-phase-mobile-tasks
-while learning mobile app development at a2sv 
+# eCommerce Flutter Project
+
+This is an eCommerce application built using Flutter and following the principles of Clean Architecture.
+
+## Architecture
+
+This project follows the Clean Architecture principles, which divides the project into several layers:
+
+1. **Presentation Layer**: Contains the UI code (widgets) and state management.
+2. **Domain Layer**: Contains the business logic, use cases, and entities.
+3. **Data Layer**: Contains the data sources, repositories, and models.
+
+## Getting Started
+
+### Prerequisites
+
+- [Flutter](https://flutter.dev/docs/get-started/install)
+- [Dart](https://dart.dev/get-dart)
+
+### Installation
+
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/kalkidan_hub/ecommerce_flutter.git```
+2. Navigate to the project directory
+```cd ecommerce_flutter ```
+3. install dependencies
+``` flutter pub get```
+4. run the app
+``` flutter run```
+
+### Running test
+``` flutter test ```
