@@ -21,13 +21,18 @@ This project follows the Clean Architecture principles, which divides the projec
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/kalkidan_hub/ecommerce_flutter.git```
+   git clone https://github.com/kalkidan_hub/ecommerce_flutter.git
 2. Navigate to the project directory
-```cd ecommerce_flutter ```
-3. install dependencies
-``` flutter pub get```
-4. run the app
-``` flutter run```
+```sh
+cd ecommerce_flutter 
+4. install dependencies
+```sh
+ flutter pub get
+
+5. run the app
+```sh
+ flutter run
 
 ### Running test
-``` flutter test ```
+```sh
+ flutter test 
