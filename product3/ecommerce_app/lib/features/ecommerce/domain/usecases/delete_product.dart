@@ -8,7 +8,7 @@ class DeleteProduct {
 
   DeleteProduct(this._productRepository);
 
-  Future<Either<Failure, Product>> execute(int id) {
+  Future<Either<Failure, Product>> execute(String id) {
     return _productRepository.deleteProduct(id);
   }
 }

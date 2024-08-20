@@ -22,24 +22,28 @@ class ProductRepoImpl implements ProductRepository {
 
   @override
   Future<Either<Failure, Product>> createProduct(Product product) async {
-    // TODO: implement createProduct
     if (await networkInfo.isConnected) {
       try {
-        final remoteProduct = await remoteSource.createProduct(product);
+        final remoteProduct =
+            await remoteSource.createProduct(ProductModel.toProduct(product));
+
+        localSource.cacheProduct(remoteProduct);
         return Right(remoteProduct);
       } on ServerException {
         return Left(ServerFailure());
       }
     } else {
-      return Left(ServerFailure());
+      return Left(NetworkFailure());
     }
   }
 
   @override
-  Future<Either<Failure, Product>> deleteProduct(int id) async {
+  Future<Either<Failure, Product>> deleteProduct(String id) async {
     if (await networkInfo.isConnected) {
       try {
         final remoteProduct = await remoteSource.deleteProduct(id);
+        localSource.deleteProduct(id);
+
         return Right(remoteProduct);
       } on ServerException {
         return Left(ServerFailure());
@@ -53,7 +57,8 @@ class ProductRepoImpl implements ProductRepository {
   Future<Either<Failure, Product>> updateProduct(Product product) async {
     if (await networkInfo.isConnected) {
       try {
-        final remoteProduct = remoteSource.updateProduct(product);
+        final remoteProduct =
+            remoteSource.updateProduct(ProductModel.toProduct(product));
         localSource.cacheProduct(Right(remoteProduct) as ProductModel);
         return Right(await remoteProduct);
       } on ServerException {
@@ -65,7 +70,7 @@ class ProductRepoImpl implements ProductRepository {
   }
 
   @override
-  Future<Either<Failure, Product>> viewAProduct(int id) async {
+  Future<Either<Failure, Product>> viewAProduct(String id) async {
     if (await networkInfo.isConnected) {
       try {
         final remoteProduct = await remoteSource.viewAProduct(id);
@@ -75,7 +80,12 @@ class ProductRepoImpl implements ProductRepository {
         return Left(ServerFailure());
       }
     } else {
-      return Left(ServerFailure());
+      try {
+        final localProduct = await localSource.getProduct(id);
+        return Right(localProduct);
+      } on CacheException {
+        return Left(CacheFailure());
+      }
     }
   }
 

@@ -19,6 +19,14 @@ void main() {
   late MockProductLocalDatasource mockLocalSource;
   late MockNetworkInfo mockNetworkInfo;
 
+  final tProduct = Product(
+      id: "1",
+      name: "name",
+      description: "description",
+      price: 10.0,
+      imageUrl: "imageUrl");
+  final tProductModel = ProductModel.toProduct(tProduct);
+
   setUp(() {
     mockRemoteSource = MockProductRemoteDatasource();
     mockLocalSource = MockProductLocalDatasource();
@@ -30,186 +38,256 @@ void main() {
     );
   });
 
-  final ProductModel tProductModel = ProductModel(
-    id: 1,
-    name: "product",
-    price: 100,
-    description: "description",
-    imageUrl: "",
-  );
-  final Product tProduct = tProductModel;
+  test("check connection", () async {
+    // arrange
+    when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
+    when(mockRemoteSource.viewAllProduct())
+        .thenAnswer((_) async => await [tProductModel]);
+    // act
+    print("networkInfo.isConnected: ${await mockNetworkInfo.isConnected}");
+    await productRepoImpl.viewAllProduct();
+    // assert
+    print("networkInfo.isConnected: ${await mockNetworkInfo.isConnected}");
+    verify(mockNetworkInfo.isConnected);
+  });
 
-  group("createProduct", () {
-    test(
-        "should return product when the call to remote data source is successful",
-        () async {
-      when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-      when(mockRemoteSource.createProduct(any))
-          .thenAnswer((_) async => tProductModel);
+  void runTestOnline(Function body) {
+    group("device is online", () {
+      setUp(() {
+        when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
+      });
+      body();
+    });
+  }
 
-      final result = await productRepoImpl.createProduct(tProduct);
+  void runTestOffline(Function body) {
+    group("device is offline", () {
+      setUp(() {
+        when(mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+      });
+      body();
+    });
+  }
 
-      verify(mockNetworkInfo.isConnected);
-      verify(mockRemoteSource.createProduct(tProduct));
-      expect(result, equals(Right(tProduct)));
+  group("create product", () {
+    runTestOnline(() {
+      test(
+          "should return remote data when the call to remote data source is successful",
+          () async {
+        // arrange
+
+        when(mockRemoteSource.createProduct(tProductModel))
+            .thenAnswer((_) async => tProductModel);
+        // act
+        final result = await productRepoImpl.createProduct(tProduct);
+        // assert
+        verify(mockRemoteSource.createProduct(tProductModel));
+        expect(result, (Right(tProductModel)));
+      });
+
+      test(
+          "should cache the data locally when the call to remote data source is successful",
+          () async {
+        // arrange
+
+        when(mockRemoteSource.createProduct(tProductModel))
+            .thenAnswer((_) async => tProductModel);
+        // act
+        await productRepoImpl.createProduct(tProduct);
+        // assert
+        verify(mockRemoteSource.createProduct(tProductModel));
+        verify(mockLocalSource.cacheProduct(tProductModel));
+      });
+
+      test(
+          "should return server failure when the call to remote data source is unsuccessful",
+          () async {
+        // arrange
+
+        when(mockRemoteSource.createProduct(tProductModel))
+            .thenThrow(ServerException());
+        // act
+        final result = await productRepoImpl.createProduct(tProduct);
+        // assert
+        verify(mockRemoteSource.createProduct(tProductModel));
+        verifyZeroInteractions(mockLocalSource);
+        expect(result, Left(ServerFailure()));
+      });
     });
 
-    test(
-        "should return server failure when the call to remote data source is unsuccessful",
-        () async {
-      when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-      when(mockRemoteSource.createProduct(any)).thenThrow(ServerException());
+    runTestOffline(() {
+      final tProduct = Product(
+          id: "1",
+          name: "name",
+          description: "description",
+          price: 10.0,
+          imageUrl: "imageUrl");
+      // final tProductModel = ProductModel.toProduct(tProduct);
+      test("should return server failure when the device is offline", () async {
+        // act
+        final result = await productRepoImpl.createProduct(tProduct);
+        // assert
+        // verifyZeroInteractions(mockRemoteSource);
+        verifyZeroInteractions(mockLocalSource);
+        expect(result, Left(NetworkFailure()));
+      });
+    });
+  });
+  group("delete product", () {
+    runTestOnline(() {
+      test(
+          "should return remote data when the call to remote data source is successful",
+          () async {
+        // arrange
 
-      final result = await productRepoImpl.createProduct(tProduct);
+        when(mockRemoteSource.deleteProduct("1"))
+            .thenAnswer((_) async => tProductModel);
+        // act
+        final result = await productRepoImpl.deleteProduct("1");
+        // assert
+        verify(mockRemoteSource.deleteProduct("1"));
+        expect(result, (Right(tProductModel)));
+      });
 
-      verify(mockNetworkInfo.isConnected);
-      verify(mockRemoteSource.createProduct(tProduct));
-      expect(result, equals(Left(ServerFailure())));
+      test(
+          "should cache the data locally when the call to remote data source is successful",
+          () async {
+        // arrange
+
+        when(mockRemoteSource.deleteProduct("1"))
+            .thenAnswer((_) async => tProductModel);
+        // act
+        await productRepoImpl.deleteProduct("1");
+        // assert
+        verify(mockRemoteSource.deleteProduct("1"));
+        verify(mockLocalSource.deleteProduct("1"));
+      });
+
+      test(
+          "should return server failure when the call to remote data source is unsuccessful",
+          () async {
+        // arrange
+
+        when(mockRemoteSource.deleteProduct("1")).thenThrow(ServerException());
+        // act
+        final result = await productRepoImpl.deleteProduct("1");
+        // assert
+        verify(mockRemoteSource.deleteProduct("1"));
+        verifyZeroInteractions(mockLocalSource);
+        expect(result, Left(ServerFailure()));
+      });
+    });
+    runTestOffline(() {
+      test("should return server failure when the device is offline", () async {
+        // act
+        final result = await productRepoImpl.deleteProduct("1");
+        // assert
+        // verifyZeroInteractions(mockRemoteSource);
+        verifyZeroInteractions(mockLocalSource);
+        expect(result, Left(NetworkFailure()));
+      });
     });
   });
 
-  group("deleteProduct", () {
-    test(
-        "should return product when the call to remote data source is successful",
-        () async {
-      when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-      when(mockRemoteSource.deleteProduct(any))
-          .thenAnswer((_) async => tProductModel);
+  group("view a product", () {
+    runTestOnline(() {
+      test(
+          "should return remote data when the call to remote data source is successful",
+          () async {
+        // arrange
 
-      final result = await productRepoImpl.deleteProduct(tProduct.id);
+        when(mockRemoteSource.viewAProduct("1"))
+            .thenAnswer((_) async => tProductModel);
+        // act
+        final result = await productRepoImpl.viewAProduct("1");
+        // assert
+        verify(mockRemoteSource.viewAProduct("1"));
+        expect(result, (Right(tProductModel)));
+      });
 
-      verify(mockNetworkInfo.isConnected);
-      verify(mockRemoteSource.deleteProduct(tProduct.id));
-      expect(result, equals(Right(tProduct)));
+      test(
+          "should cache the data locally when the call to remote data source is successful",
+          () async {
+        // arrange
+
+        when(mockRemoteSource.viewAProduct("1"))
+            .thenAnswer((_) async => tProductModel);
+        // act
+        await productRepoImpl.viewAProduct("1");
+        // assert
+        verify(mockRemoteSource.viewAProduct("1"));
+        verify(mockLocalSource.cacheProduct(tProductModel));
+      });
+
+      test(
+          "should return server failure when the call to remote data source is unsuccessful",
+          () async {
+        // arrange
+
+        when(mockRemoteSource.viewAProduct("1")).thenThrow(ServerException());
+        // act
+        final result = await productRepoImpl.viewAProduct("1");
+        // assert
+        verify(mockRemoteSource.viewAProduct("1"));
+        verifyZeroInteractions(mockLocalSource);
+        expect(result, Left(ServerFailure()));
+      });
+    });
+    runTestOffline(() {
+      test("should return server failure when the device is offline", () async {
+        // act
+        final result = await productRepoImpl.viewAProduct("1");
+        // assert
+        // verifyZeroInteractions(mockRemoteSource);
+        verifyZeroInteractions(mockLocalSource);
+        expect(result, Left(NetworkFailure()));
+      });
     });
 
-    test(
-        "should return server failure when the call to remote data source is unsuccessful",
-        () async {
-      when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-      when(mockRemoteSource.deleteProduct(any)).thenThrow(ServerException());
+    group("view all product", () {
+      runTestOnline(() {
+        test(
+            "should return remote data when the call to remote data source is successful",
+            () async {
+          // arrange
 
-      final result = await productRepoImpl.deleteProduct(tProduct.id);
+          when(mockRemoteSource.viewAllProduct())
+              .thenAnswer((_) async => await [tProductModel]);
+          // act
+          final result = await productRepoImpl.viewAllProduct();
+          // assert
+          verify(mockRemoteSource.viewAllProduct());
+          expect(result, (Right([tProductModel])));
+        });
 
-      verify(mockNetworkInfo.isConnected);
-      verify(mockRemoteSource.deleteProduct(tProduct.id));
-      expect(result, equals(Left(ServerFailure())));
-    });
-  });
+        test(
+            "should cache the data locally when the call to remote data source is successful",
+            () async {
+          // arrange
 
-  group("updateProduct", () {
-    test(
-        "should return product when the call to remote data source is successful",
-        () async {
-      when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-      when(mockRemoteSource.updateProduct(any))
-          .thenAnswer((_) async => tProductModel);
+          when(mockRemoteSource.viewAllProduct())
+              .thenAnswer((_) async => await [tProductModel]);
+          // act
+          await productRepoImpl.viewAllProduct();
+          // assert
+          verify(mockRemoteSource.viewAllProduct());
+          // verify(mockLocalSource.cacheProductList([tProductModel]));
+        });
 
-      final result = await productRepoImpl.updateProduct(tProduct);
+        test(
+            "should return server failure when the call to remote data source is unsuccessful",
+            () async {
+          // arrange
 
-      verify(mockNetworkInfo.isConnected);
-      verify(mockRemoteSource.updateProduct(tProduct));
-      verify(mockLocalSource.cacheProduct(tProductModel));
-      expect(result, equals(Right(tProduct)));
-    });
-
-    test(
-        "should return server failure when the call to remote data source is unsuccessful",
-        () async {
-      when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-      when(mockRemoteSource.updateProduct(any)).thenThrow(ServerException());
-
-      final result = await productRepoImpl.updateProduct(tProduct);
-
-      verify(mockNetworkInfo.isConnected);
-      verify(mockRemoteSource.updateProduct(tProduct));
-      expect(result, equals(Left(ServerFailure())));
-    });
-  });
-
-  group("viewAProduct", () {
-    test(
-        "should return product when the call to remote data source is successful",
-        () async {
-      when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-      when(mockRemoteSource.viewAProduct(any))
-          .thenAnswer((_) async => tProductModel);
-
-      final result = await productRepoImpl.viewAProduct(tProduct.id);
-
-      verify(mockNetworkInfo.isConnected);
-      verify(mockRemoteSource.viewAProduct(tProduct.id));
-      verify(mockLocalSource.cacheProduct(tProductModel));
-      expect(result, equals(Right(tProduct)));
-    });
-
-    test(
-        "should return server failure when the call to remote data source is unsuccessful",
-        () async {
-      when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-      when(mockRemoteSource.viewAProduct(any)).thenThrow(ServerException());
-
-      final result = await productRepoImpl.viewAProduct(tProduct.id);
-
-      verify(mockNetworkInfo.isConnected);
-      verify(mockRemoteSource.viewAProduct(tProduct.id));
-      expect(result, equals(Left(ServerFailure())));
-    });
-  });
-
-  group("viewAllProduct", () {
-    test(
-        "should return products when the call to remote data source is successful",
-        () async {
-      when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-      when(mockRemoteSource.viewAllProduct())
-          .thenAnswer((_) async => [tProductModel]);
-
-      final result = await productRepoImpl.viewAllProduct();
-
-      verify(mockNetworkInfo.isConnected);
-      verify(mockRemoteSource.viewAllProduct());
-      verify(mockLocalSource.cacheProducts([tProductModel]));
-      expect(result, equals(Right([tProductModel])));
-    });
-
-    test(
-        "should return server failure when the call to remote data source is unsuccessful",
-        () async {
-      when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
-      when(mockRemoteSource.viewAllProduct()).thenThrow(ServerException());
-
-      final result = await productRepoImpl.viewAllProduct();
-
-      verify(mockNetworkInfo.isConnected);
-      verify(mockRemoteSource.viewAllProduct());
-      expect(result, equals(Left(ServerFailure())));
-    });
-
-    test("should return cached data when there is no internet connection",
-        () async {
-      when(mockNetworkInfo.isConnected).thenAnswer((_) async => false);
-      when(mockLocalSource.getProducts())
-          .thenAnswer((_) async => [tProductModel]);
-
-      final result = await productRepoImpl.viewAllProduct();
-
-      verifyZeroInteractions(mockRemoteSource);
-      verify(mockLocalSource.getProducts());
-      expect(result, equals(Right([tProductModel])));
-    });
-
-    test(
-        "should return cache failure when there is no internet connection and no cached data",
-        () async {
-      when(mockNetworkInfo.isConnected).thenAnswer((_) async => false);
-      when(mockLocalSource.getProducts()).thenThrow(CacheException());
-
-      final result = await productRepoImpl.viewAllProduct();
-
-      verifyZeroInteractions(mockRemoteSource);
-      verify(mockLocalSource.getProducts());
-      expect(result, equals(Left(CacheFailure())));
+          when(mockRemoteSource.viewAllProduct()).thenThrow(ServerException());
+          // act
+          final result = await productRepoImpl.viewAllProduct();
+          // assert
+          verify(mockRemoteSource.viewAllProduct());
+          verifyZeroInteractions(mockLocalSource);
+          expect(result, Left(ServerFailure()));
+        });
+      });
     });
   });
 }

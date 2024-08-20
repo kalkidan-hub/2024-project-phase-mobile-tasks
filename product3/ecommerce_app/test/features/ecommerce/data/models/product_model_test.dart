@@ -9,7 +9,7 @@ import '../../../../helpers/json_reader.dart';
 
 void main() {
   ProductModel tproductModel = ProductModel(
-    id: 1,
+    id: "1",
     name: 'product',
     price: 100,
     description: 'description',

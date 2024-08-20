@@ -8,7 +8,7 @@ class ViewAProduct {
 
   ViewAProduct(this._productRepository);
 
-  Future<Either<Failure, Product>> execute(int id) {
+  Future<Either<Failure, Product>> execute(String id) {
     return _productRepository.viewAProduct(id);
   }
 }
