@@ -1,4 +1,4 @@
-import 'package:ecommerce_app/core/platform/network_info.dart';
+import 'package:ecommerce_app/core/network/network_info.dart';
 import 'package:ecommerce_app/features/ecommerce/data/datasource/local_datasource.dart';
 import 'package:ecommerce_app/features/ecommerce/data/datasource/remote_datasource.dart';
 import 'package:flutter_test/flutter_test.dart';
